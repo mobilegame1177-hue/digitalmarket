@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalMarket | Мои заказы</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo"><h1>DigitalMarket</h1><p>Мои заказы</p></div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="admin.html" id="adminLink" style="display:none;">Админ-панель</a>
+            <div class="balance-area" id="balanceArea" style="display: none;">
+                <span class="balance-label">Баланс:</span>
+                <span class="balance-value" id="userBalance">0</span>
+                <button id="topUpBtn" class="topup-btn">Пополнить</button>
+            </div>
+            <button id="authBtn" class="auth-nav-btn">Войти</button>
+        </div>
+    </div>
+    <h2>Мои заказы</h2>
+    <div id="purchasesContainer" class="purchases-list"></div>
+    <div class="manifest-footer">🔐 Заказы ожидают выдачи администратором. После выдачи вы получите ключ.</div>
+</div>
+
+<!-- Модальное окно авторизации -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Вход</h2>
+        <form id="authForm">
+            <input type="text" id="authName" placeholder="Имя" autocomplete="off">
+            <input type="email" id="authEmail" placeholder="Email" required>
+            <input type="password" id="authPassword" placeholder="Пароль" required>
+            <button type="submit" id="modalSubmitBtn">Войти</button>
+            <p id="toggleAuthMode">Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a></p>
+        </form>
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно пополнения баланса -->
+<div id="topupModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupModal">&times;</span>
+        <h2> Пополнение баланса</h2>
+        <p>Выберите сумму</p>
+        <div class="topup-options">
+            <button class="topup-amount" data-amount="500">500 ₽</button>
+            <button class="topup-amount" data-amount="1000">1000 ₽</button>
+            <button class="topup-amount" data-amount="2500">2500 ₽</button>
+            <button class="topup-amount" data-amount="5000">5000 ₽</button>
+        </div>
+        <div style="margin-top: 1rem;">
+            <input type="number" id="customAmount" placeholder="Своя сумма (₽)" min="1">
+            <button id="customTopupBtn">Пополнить</button>
+        </div>
+        <div id="topupMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<script src="script.js"></script>
+<div id="topupAmountModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupAmountModal">&times;</span>
+        <h2>Пополнение баланса</h2>
+        <p>Введите сумму пополнения (в рублях):</p>
+        <input type="number" id="topupAmount" placeholder="Сумма" min="1" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;">
+        <button id="chooseTopupAmount" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Продолжить</button>
+    </div>
+</div>
+<div id="topupBankModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupBankModal">&times;</span>
+        <h2>💳 Реквизиты для перевода</h2>
+        <p>Переведите <strong id="bankAmount">0</strong> ₽ на один из следующих счетов:</p>
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 1rem; margin: 1rem 0;">
+            <p><strong>Сбербанк</strong><br>Карта: 2202 2036 1234 5678<br>Получатель: ИП DigitalMarket</p>
+            <hr>
+            <p><strong>Т-Банк</strong><br>Карта: 5536 9134 9876 5432<br>Получатель: ООО "ДиджиталМаркет"</p>
+        </div>
+        <p><strong>Важно:</strong> В назначении платежа укажите свой email: <span id="userEmailForTopup"></span></p>
+        <button id="confirmPaymentBtn" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Я перевёл(а) – подтвердить заявку</button>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">После подтверждения перевода администратор проверит операцию и зачислит средства.</p>
+    </div>
+</div>
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>

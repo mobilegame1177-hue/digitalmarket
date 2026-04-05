@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalMarket | Админ-панель</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo"><h1>DigitalMarket</h1><p>Административная панель</p></div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="my-tickets.html">Мои обращения</a>
+            <a href="admin.html" id="adminLink" style="display:none;">👑 Админ-панель</a>
+            <div class="balance-area" id="balanceArea" style="display: none;">
+                <span class="balance-label">💰 Баланс:</span>
+                <span class="balance-value" id="userBalance">0 руб.</span>
+                <button id="topUpBtn" class="topup-btn">➕ Пополнить</button>
+            </div>
+            <button id="authBtn" class="auth-nav-btn">Войти</button>
+        </div>
+    </div>
+
+    <h2>📦 Управление товарами</h2>
+    <div class="admin-section">
+        <h3>Добавить новый товар</h3>
+        <form id="addProductForm" class="admin-form">
+            <input type="text" id="prodName" placeholder="Название товара" required>
+            <input type="number" id="prodPrice" placeholder="Цена (в рублях)" required>
+            <label style="color:#00ff88;">Изображение товара (JPG, PNG, GIF):</label>
+            <input type="file" id="prodImage" accept="image/*" required>
+            <select id="prodCategory" required>
+                <option value="Анимации">🎬 Анимации</option>
+                <option value="Игрушки">🧸 Игрушки</option>
+                <option value="Комнаты">🏠 Комнаты</option>
+            </select>
+            <textarea id="prodDesc" placeholder="Полное описание товара" rows="2" required></textarea>
+            <button type="submit">➕ Добавить товар</button>
+        </form>
+    </div>
+
+    <div class="admin-section">
+        <h3>Список товаров</h3>
+        <div id="adminProductsList" class="admin-products-list"></div>
+    </div>
+
+    <div class="admin-section">
+    <h3>👥 Управление пользователями</h3>
+    <div id="adminUsersContainer" class="admin-users-table-wrapper">
+        <table class="admin-users-table">
+            <thead>
+                <tr><th>Имя</th><th>Email</th><th>Баланс</th><th>Статус</th><th>Действия</th></tr>
+            </thead>
+            <tbody id="adminUsersTableBody"></tbody>
+        </table>
+    </div>
+
+
+    <div class="admin-section">
+        <h3>📦 Заказы, ожидающие выдачи</h3>
+        <div id="adminOrdersContainer" class="admin-orders-list"></div>
+    </div>
+
+    <div class="admin-section">
+        <h3>💰 Заявки на пополнение баланса</h3>
+        <div id="adminTopupRequestsContainer" class="admin-topup-requests-list"></div>
+    </div>
+
+    <div class="admin-section">
+        <h3>📬 Тикеты поддержки</h3>
+        <div id="adminTicketsContainer" class="admin-tickets-list"></div>
+    </div>
+
+    <div class="manifest-footer">🔐 Вы вошли как администратор.</div>
+</div>
+
+<!-- Модальное окно авторизации -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Вход</h2>
+        <form id="authForm">
+            <input type="text" id="authName" placeholder="Имя" autocomplete="off">
+            <input type="email" id="authEmail" placeholder="Email" required>
+            <input type="password" id="authPassword" placeholder="Пароль" required>
+            <button type="submit" id="modalSubmitBtn">Войти</button>
+            <p id="toggleAuthMode">Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a></p>
+        </form>
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно выбора суммы пополнения -->
+<div id="topupAmountModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupAmountModal">&times;</span>
+        <h2>💰 Пополнение баланса</h2>
+        <p>Введите сумму пополнения (в рублях):</p>
+        <input type="number" id="topupAmount" placeholder="Сумма" min="1" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;">
+        <button id="chooseTopupAmount" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Продолжить</button>
+    </div>
+</div>
+
+<!-- Модальное окно с реквизитами банка -->
+<div id="topupBankModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupBankModal">&times;</span>
+        <h2>💳 Реквизиты для перевода</h2>
+        <p>Переведите <strong id="bankAmount">0</strong> ₽ на один из следующих счетов:</p>
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 1rem; margin: 1rem 0;">
+            <p><strong>Сбербанк</strong><br>Карта: 2202 2036 1234 5678<br>Получатель: ИП DigitalMarket</p>
+            <hr>
+            <p><strong>Т-Банк</strong><br>Карта: 5536 9134 9876 5432<br>Получатель: ООО "ДиджиталМаркет"</p>
+        </div>
+        <p><strong>Важно:</strong> В назначении платежа укажите свой email: <span id="userEmailForTopup"></span></p>
+        <button id="confirmPaymentBtn" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">✅ Я перевёл(а) – подтвердить заявку</button>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">После подтверждения перевода администратор проверит операцию и зачислит средства.</p>
+    </div>
+</div>
+
+<!-- Модальное окно деталей товара -->
+<div id="productModal" class="modal">
+    <div class="modal-content product-detail-modal">
+        <span class="close-modal" id="closeProductModal">&times;</span>
+        <div id="productDetailContent">
+            <div style="font-size: 4rem; text-align: center;" id="productDetailIcon">🐉</div>
+            <h2 id="productDetailName">Dragon Slayer Скин</h2>
+            <p id="productDetailDesc">Редкий коллекционный скин для оружия.</p>
+            <div class="product-detail-price" id="productDetailPrice">1490 ₽</div>
+            <button class="buy-btn product-detail-buy" id="productDetailBuyBtn">💰 Купить сейчас</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно изменения баланса пользователя -->
+<div id="adminEditBalanceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeAdminBalanceModal">&times;</span>
+        <h3>Редактирование баланса</h3>
+        <p>Пользователь: <span id="editBalanceUserName"></span></p>
+        <p>Текущий баланс: <span id="editBalanceCurrent"></span> ₽</p>
+        <input type="number" id="editBalanceAmount" placeholder="Сумма (положительная или отрицательная)" value="0">
+        <button id="applyBalanceChangeBtn" class="apply-balance-btn">Применить изменение</button>
+        <div id="balanceChangeMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно чата по заказу (админ) -->
+<div id="adminChatModal" class="modal">
+    <div class="modal-content chat-modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Чат с <span id="adminChatUser"></span> по заказу <span id="adminChatProduct"></span></h3>
+        <div id="adminChatMessages" class="chat-messages"></div>
+        <input type="text" id="adminKeyInput" placeholder="Ключ/ссылка для выдачи">
+        <textarea id="adminChatMessageText" rows="2" placeholder="Сообщение..."></textarea>
+        <button id="adminSendMessageBtn">Отправить сообщение</button>
+        <button id="adminDeliverBtn" class="deliver-btn">✅ Выдать товар</button>
+    </div>
+</div>
+
+<!-- Модальное окно чата по тикету (админ) -->
+<div id="adminTicketChatModal" class="modal">
+    <div class="modal-content chat-modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Тикет #<span id="ticketIdSpan"></span> от <span id="ticketUserSpan"></span></h3>
+        <div id="ticketChatMessages" class="chat-messages"></div>
+        <textarea id="ticketChatMessageText" rows="2" placeholder="Ответ пользователю..."></textarea>
+        <button id="ticketSendMessageBtn">Отправить</button>
+    </div>
+</div>
+
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>

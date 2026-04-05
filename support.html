@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalMarket | Поддержка</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <!-- ШАПКА (такая же, как на других страницах) -->
+    <div class="header">
+        <div class="logo">
+            <h1>DigitalMarket</h1>
+            <p>Глобальный проект по продаже ВСЕГО в "Аватарии"!</p>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="my-tickets.html">Мои обращения</a>
+            <a href="admin.html" id="adminLink" style="display:none;">Админ-панель</a>
+            <!-- Баланс и кнопка входа теперь в выдвижном меню, но оставляем их скрытыми -->
+            <button id="authBtn" class="auth-nav-btn" style="display:none;">Войти</button>
+        </div>
+    </div>
+
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <div class="support-wrapper">
+        <div class="support-header">
+            <h2>Служба поддержки</h2>
+            <p>Мы на связи 24/7, ответим в течение нескольких часов</p>
+        </div>
+
+        <div class="support-grid">
+            <!-- ФОРМА ОБРАЩЕНИЯ -->
+            <div class="support-form-card">
+                <h3>Создать обращение</h3>
+                <form id="supportForm" class="support-form">
+                    <div class="input-group">
+                        <label>Ваше имя</label>
+                        <input type="text" id="supportName" placeholder="Иван Иванов" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Email для ответа</label>
+                        <input type="email" id="supportEmail" placeholder="ivan@example.com" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Сообщение</label>
+                        <textarea id="supportMsg" rows="4" placeholder="Опишите вашу проблему или вопрос..." required></textarea>
+                    </div>
+                    <button type="button" id="sendSupportBtn" class="neon-button">📩 Отправить обращение</button>
+                </form>
+            </div>
+
+            <!-- КОНТАКТНАЯ ИНФОРМАЦИЯ -->
+            <div class="support-contacts-card">
+                <h3>Контакты</h3>
+                <div class="contact-item">
+                    <span class="contact-icon"></span>
+                    <a href="mailto:support@digitalmarket.ru">support@digitalmarket.ru</a>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"></span>
+                    <a href="tel:+79991234567">+7 (999) 123-45-67</a>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"></span>
+                    <span>Telegram: @digitalmarket_support</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"></span>
+                    <span>Режим работы: круглосуточно</span>
+                </div>
+                <div class="contact-item">
+                    <span class="contact-icon"></span>
+                    <span>Среднее время ответа: до 24 часов</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- БЛОК С ЧАСТЫМИ ВОПРОСАМИ (опционально) -->
+        <div class="faq-section">
+            <h3> Часто задаваемые вопросы</h3>
+            <div class="faq-grid">
+                <div class="faq-item">
+                    <div class="faq-question">Как долго обрабатывается заказ?</div>
+                    <div class="faq-answer">Обычно до 30 минут, но может занимать до 24 часов в зависимости от загруженности.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Как получить товар после оплаты?</div>
+                    <div class="faq-answer">Ключ появится в разделе «Мои заказы» после того, как администратор подтвердит выдачу.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question">Что делать, если товар не подошёл?</div>
+                    <div class="faq-answer">Напишите в поддержку – мы рассмотрим возврат или обмен.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ФУТЕР -->
+    <div class="manifest-footer">
+        <div class="manifest-box">
+            • Лицензия: DigitalMarket Public License<br>
+             Ваши обращения обрабатываются в порядке очереди. Пожалуйста, не дублируйте тикеты.
+        </div>
+        <div>© 2025 DigitalMarket — служба поддержки клиентов</div>
+    </div>
+</div>
+
+<!-- МОДАЛЬНЫЕ ОКНА (те же, что и на других страницах) -->
+<div id="authModal" class="modal">...</div>
+<div id="topupAmountModal" class="modal">...</div>
+<div id="topupBankModal" class="modal">...</div>
+<div id="productModal" class="modal">...</div>
+<div id="adminEditBalanceModal" class="modal">...</div>
+<div id="chatModal" class="modal">...</div>
+<div id="userTicketChatModal" class="modal">...</div>
+
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DigitalMarket | Главная</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <!-- ШАПКА С НАВИГАЦИЕЙ -->
+    <div class="header">
+        <div class="logo">
+            <h1>DigitalMarket</h1>
+            <p>Глобальный проект по продаже ВСЕГО в "Аватарии"!</p>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="my-tickets.html">Мои обращения</a>
+            <a href="admin.html" id="adminLink" style="display:none;">👑 Админ-панель</a>
+            <div class="balance-area" id="balanceArea" style="display: none;">
+                <span class="balance-label">Баланс:</span>
+                <span class="balance-value" id="userBalance">0 ₽</span>
+                <button id="topUpBtn" class="topup-btn">➕ Пополнить</button>
+            </div>
+            <button id="authBtn" class="auth-nav-btn">Войти</button>
+        </div>
+    </div>
+
+    <!-- КАРУСЕЛЬ ТОВАРОВ -->
+    <div class="carousel-section" id="catalogSection">
+        <div class="section-title"><span>Популярные товары</span></div>
+        <div class="carousel-wrapper">
+            <button class="carousel-btn" id="carouselPrevBtn">◀</button>
+            <div class="carousel-track" id="carouselTrack"></div>
+            <button class="carousel-btn" id="carouselNextBtn">▶</button>
+        </div>
+    </div>
+
+
+    <!-- ФУТЕР С МАНИФЕСТОМ -->
+    <div class="manifest-footer">
+        <div class="manifest-box">
+            • Лицензия: DigitalMarket Public License<br> Требуется регистрация для покупки.
+        </div>
+        <div>© 2025 DigitalMarket — Лучший сервис по продаже в игре "Аватария"!.</div>
+    </div>
+</div>
+
+<!-- ========== МОДАЛЬНЫЕ ОКНА ========== -->
+
+<!-- Модальное окно авторизации / регистрации -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Вход</h2>
+        <form id="authForm">
+            <input type="text" id="authName" placeholder="Имя" autocomplete="off">
+            <input type="email" id="authEmail" placeholder="Email" required>
+            <input type="password" id="authPassword" placeholder="Пароль" required>
+            <button type="submit" id="modalSubmitBtn">Войти</button>
+            <p id="toggleAuthMode">Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a></p>
+        </form>
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно выбора суммы пополнения -->
+<div id="topupAmountModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupAmountModal">&times;</span>
+        <h2>💰 Пополнение баланса</h2>
+        <p>Введите сумму пополнения (в рублях):</p>
+        <input type="number" id="topupAmount" placeholder="Сумма" min="1" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;">
+        <button id="chooseTopupAmount" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Продолжить</button>
+    </div>
+</div>
+
+<!-- Модальное окно с реквизитами банка -->
+<div id="topupBankModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupBankModal">&times;</span>
+        <h2>💳 Реквизиты для перевода</h2>
+        <p>Переведите <strong id="bankAmount">0</strong> ₽ на один из следующих счетов:</p>
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 1rem; margin: 1rem 0;">
+            <p><strong>ГазпромБанк</strong><br>Карта: 2202 2036 1234 5678<br>Получатель: Николай Ш.</p>
+            <hr>
+            <p><strong>Альфа Банк</strong><br>Карта: 5536 9134 9876 5432<br>Получатель: ООО "ДиджиталМаркет"</p>
+        </div>
+        <p><strong>Важно:</strong> В назначении платежа укажите свой email: <span id="userEmailForTopup"></span></p>
+        <button id="confirmPaymentBtn" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">✅ Я перевёл(а) – подтвердить заявку</button>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">После подтверждения перевода администратор проверит операцию и зачислит средства.</p>
+    </div>
+</div>
+
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>DigitalMarket | Мои обращения</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo">
+            <h1>DigitalMarket</h1>
+            <p>Цифровые товары / игры / ключи / скины</p>
+        </div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="my-tickets.html">Мои обращения</a>
+            <a href="admin.html" id="adminLink" style="display:none;">👑 Админ-панель</a>
+        </div>
+    </div>
+
+    <div class="tickets-modern">
+        <div class="tickets-modern-header">
+            <h2>Мои обращения</h2>
+            <p>История ваших вопросов и ответы поддержки</p>
+        </div>
+        <div id="userTicketsContainer" class="tickets-modern-list"></div>
+    </div>
+
+    <div class="manifest-footer">
+        <div class="manifest-box">
+             • Лицензия: DigitalMarket Public License<br>
+             Обращения обрабатываются в порядке очереди. Не создавайте дубликаты.
+        </div>
+        <div>© 2025 DigitalMarket — служба поддержки клиентов</div>
+    </div>
+</div>
+
+<!-- ========== МОДАЛЬНЫЕ ОКНА (ОБЩИЕ ДЛЯ ВСЕГО САЙТА) ========== -->
+
+<!-- Модальное окно авторизации / регистрации -->
+<div id="authModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal">&times;</span>
+        <h2 id="modalTitle">Вход</h2>
+        <form id="authForm">
+            <input type="text" id="authName" placeholder="Имя" autocomplete="off">
+            <input type="email" id="authEmail" placeholder="Email" required>
+            <input type="password" id="authPassword" placeholder="Пароль" required>
+            <button type="submit" id="modalSubmitBtn">Войти</button>
+            <p id="toggleAuthMode">Нет аккаунта? <a href="#" id="switchToRegister">Зарегистрироваться</a></p>
+        </form>
+        <div id="authMessage" class="auth-message"></div>
+    </div>
+</div>
+
+<!-- Модальное окно выбора суммы пополнения -->
+<div id="topupAmountModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupAmountModal">&times;</span>
+        <h2> Пополнение баланса</h2>
+        <p>Введите сумму пополнения (в рублях):</p>
+        <input type="number" id="topupAmount" placeholder="Сумма" min="1" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;">
+        <button id="chooseTopupAmount" class="neon-button">Продолжить</button>
+    </div>
+</div>
+
+<!-- Модальное окно с реквизитами банка -->
+<div id="topupBankModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupBankModal">&times;</span>
+        <h2> Реквизиты для перевода</h2>
+        <p>Переведите <strong id="bankAmount">0</strong> ₽ на один из следующих счетов:</p>
+        <div class="bank-details">
+            <p><strong>🏦 Сбербанк</strong><br>Карта: 2202 2036 1234 5678<br>Получатель: ИП DigitalMarket</p>
+            <hr>
+            <p><strong>🏦 Т-Банк</strong><br>Карта: 5536 9134 9876 5432<br>Получатель: ООО "ДиджиталМаркет"</p>
+        </div>
+        <p><strong>Важно:</strong> В назначении платежа укажите свой email: <span id="userEmailForTopup"></span></p>
+        <button id="confirmPaymentBtn" class="neon-button success">✅ Я перевёл(а) – подтвердить заявку</button>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">После подтверждения перевода администратор проверит операцию и зачислит средства.</p>
+    </div>
+</div>
+
+<!-- Модальное окно деталей товара (для каталога, но может понадобиться) -->
+<div id="productModal" class="modal">
+    <div class="modal-content product-detail-modal">
+        <span class="close-modal" id="closeProductModal">&times;</span>
+        <div id="productDetailContent">
+            <div id="productDetailIcon" style="font-size: 4rem; text-align: center;">🐉</div>
+            <h2 id="productDetailName">Dragon Slayer Скин</h2>
+            <p id="productDetailDesc">Редкий коллекционный скин для оружия.</p>
+            <div class="product-detail-price" id="productDetailPrice">1490 руб.</div>
+            <button class="buy-btn product-detail-buy" id="productDetailBuyBtn">💰 Купить сейчас</button>
+        </div>
+    </div>
+</div>
+
+<!-- Модальное окно чата по тикету (пользователь) -->
+<div id="userTicketChatModal" class="modal">
+    <div class="modal-content chat-modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Чат по обращению #<span id="userTicketId"></span></h3>
+        <div id="userTicketChatMessages" class="chat-messages"></div>
+        <textarea id="userTicketMessageText" rows="2" placeholder="Ваше сообщение..."></textarea>
+        <button id="userTicketSendBtn" class="neon-button">Отправить</button>
+        <div id="userTicketClosedWarning" style="color: #ff3366; margin-top: 0.5rem; display: none;">⚠️ Тикет закрыт, отправка сообщений недоступна.</div>
+    </div>
+</div>
+
+<!-- Модальное окно чата по заказу (для purchases.html) – оставляем на всякий случай -->
+<div id="chatModal" class="modal">
+    <div class="modal-content chat-modal-content">
+        <span class="close-modal">&times;</span>
+        <h3>Чат по заказу: <span id="chatProductName"></span></h3>
+        <div id="chatMessages" class="chat-messages"></div>
+        <textarea id="chatMessageText" rows="2" placeholder="Сообщение..."></textarea>
+        <button id="sendChatMessageBtn" class="neon-button">Отправить</button>
+    </div>
+</div>
+
+<!-- Модальное окно изменения баланса (админ) – для совместимости -->
+<div id="adminEditBalanceModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeAdminBalanceModal">&times;</span>
+        <h3>Редактирование баланса</h3>
+        <p>Пользователь: <span id="editBalanceUserName"></span></p>
+        <p>Текущий баланс: <span id="editBalanceCurrent"></span> руб.</p>
+        <input type="number" id="editBalanceAmount" placeholder="Сумма (положительная или отрицательная)" value="0">
+        <button id="applyBalanceChangeBtn" class="neon-button">Применить изменение</button>
+        <div id="balanceChangeMessage" class="auth-message"></div>
+    </div>
+</div>
+
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DigitalMarket | Каталог</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-container">
+    <div class="header">
+        <div class="logo"><h1>DigitalMarket</h1><p>Каталог товаров</p></div>
+        <div class="nav-links">
+            <a href="index.html">Главная</a>
+            <a href="catalog.html">Каталог</a>
+            <a href="purchases.html">Мои заказы</a>
+            <a href="support.html">Поддержка</a>
+            <a href="my-tickets.html">Мои обращения</a>
+            <a href="admin.html" id="adminLink" style="display:none;">Админ-панель</a>
+            <div class="balance-area" id="balanceArea" style="display: none;">
+                <span class="balance-label">Баланс:</span>
+                <span class="balance-value" id="userBalance">0 ₽</span>
+                <button id="topUpBtn" class="topup-btn">Пополнить</button>
+            </div>
+            <button id="authBtn" class="auth-nav-btn">Войти</button>
+        </div>
+    </div>
+
+    <h2>Категории</h2>
+    <div class="category-filters">
+        <button class="category-btn active" data-category="all">Все</button>
+        <button class="category-btn" data-category="Анимации">Анимации</button>
+        <button class="category-btn" data-category="Игрушки">Игрушки</button>
+        <button class="category-btn" data-category="Комнаты">Комнаты</button>
+    </div>
+
+    <h2>Товары</h2>
+    <div id="catalogGrid" class="catalog-grid"></div>
+
+    <div class="manifest-footer">© 2025 DigitalMarket — каталог с категориями</div>
+</div>
+
+<!-- Модальные окна (авторизация, пополнение, детали товара) -->
+<div id="authModal" class="modal">...</div>
+<div id="topupModal" class="modal">...</div>
+<div id="productModal" class="modal">...</div>
+
+<script src="script.js"></script>
+<div id="topupAmountModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupAmountModal">&times;</span>
+        <h2>Пополнение баланса</h2>
+        <p>Введите сумму пополнения (в рублях):</p>
+        <input type="number" id="topupAmount" placeholder="Сумма" min="1" style="width: 100%; padding: 0.5rem; margin: 0.5rem 0;">
+        <button id="chooseTopupAmount" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Продолжить</button>
+    </div>
+</div>
+<div id="topupBankModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" id="closeTopupBankModal">&times;</span>
+        <h2>💳 Реквизиты для перевода</h2>
+        <p>Переведите <strong id="bankAmount">0</strong> ₽ на один из следующих счетов:</p>
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 1rem; margin: 1rem 0;">
+            <p><strong>Сбербанк</strong><br>Карта: 2202 2036 1234 5678<br>Получатель: ИП DigitalMarket</p>
+            <hr>
+            <p><strong>Т-Банк</strong><br>Карта: 5536 9134 9876 5432<br>Получатель: ООО "ДиджиталМаркет"</p>
+        </div>
+        <p><strong>Важно:</strong> В назначении платежа укажите свой email: <span id="userEmailForTopup"></span></p>
+        <button id="confirmPaymentBtn" style="background: #10b981; color: white; border: none; padding: 0.5rem 1rem; border-radius: 2rem; cursor: pointer;">Я перевёл(а) – подтвердить заявку</button>
+        <p style="font-size: 0.8rem; margin-top: 0.5rem;">После подтверждения перевода администратор проверит операцию и зачислит средства.</p>
+    </div>
+</div>
+    <!-- Подключаем Supabase SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Подключаем ваш основной скрипт (зависит от SDK) -->
+    <script src="script.js"></script>
+</body>
+</html>
+</body>
+</html>
