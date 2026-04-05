@@ -3,7 +3,8 @@
 const SUPABASE_URL = 'https://digitalmarket.supabase.co';
 const SUPABASE_ANON_KEY = 'cnsstmlhbeckboteflta';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Используем другое имя, чтобы не конфликтовать с глобальным supabase
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Глобальные переменные
 let currentUser = null;      // { id, email, name, role, balance }
@@ -25,20 +26,15 @@ function applyNeonTheme() {
     if (!document.body.classList.contains('neon-theme')) document.body.classList.add('neon-theme');
 }
 
-function updateAdminLink() {
-    const link = document.getElementById('adminLink');
-    if (link) link.style.display = (currentUser && currentUser.role === 'admin') ? 'inline-block' : 'none';
-}
-
 function isImageData(str) {
     return str && (str.startsWith('data:image') || str.startsWith('http'));
 }
 
 // ==================== ЗАГРУЗКА ТЕКУЩЕГО ПОЛЬЗОВАТЕЛЯ ====================
 async function loadCurrentUser() {
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data: { user } } = await sb.auth.getUser();
     if (user) {
-        const { data: profile } = await supabase
+        const { data: profile } = await sb
             .from('profiles')
             .select('name, role, balance, blocked')
             .eq('id', user.id)
@@ -53,7 +49,7 @@ async function loadCurrentUser() {
             };
             localStorage.setItem('digitalmarket_current_user', JSON.stringify(currentUser));
         } else if (profile && profile.blocked) {
-            await supabase.auth.signOut();
+            await sb.auth.signOut();
             currentUser = null;
             localStorage.removeItem('digitalmarket_current_user');
             showNeonNotification('Ваш аккаунт заблокирован', 'error');
@@ -64,11 +60,8 @@ async function loadCurrentUser() {
         currentUser = null;
         localStorage.removeItem('digitalmarket_current_user');
     }
-    updateAuthUI();
-    updateBalanceUI();
-    updateAdminLink();
     updateSidebarContent();
-    // Перерисовка страниц
+    updateAdminLink();
     if (window.location.pathname.includes('purchases.html')) renderUserOrders();
     if (window.location.pathname.includes('my-tickets.html')) renderUserTickets();
     if (window.location.pathname.includes('catalog.html')) renderCatalog(currentCatalogCategory);
@@ -81,27 +74,17 @@ async function loadCurrentUser() {
     }
 }
 
-async function updateBalanceUI() {
-    const balanceSpan = document.getElementById('userBalance');
-    if (balanceSpan && currentUser) {
-        const { data } = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single();
-        balanceSpan.textContent = `${data?.balance || 0} руб.`;
-        const sidebarBalance = document.getElementById('sidebarUserBalance');
-        if (sidebarBalance) sidebarBalance.textContent = `Баланс: ${data?.balance || 0} руб.`;
-    }
-}
-
 async function getUserBalance() {
     if (!currentUser) return 0;
-    const { data } = await supabase.from('profiles').select('balance').eq('id', currentUser.id).single();
+    const { data } = await sb.from('profiles').select('balance').eq('id', currentUser.id).single();
     return data?.balance || 0;
 }
 
 async function setUserBalance(newBalance) {
     if (!currentUser) return false;
-    const { error } = await supabase.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
+    const { error } = await sb.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
     if (!error) {
-        updateBalanceUI();
+        updateSidebarContent();
         return true;
     }
     return false;
@@ -109,7 +92,7 @@ async function setUserBalance(newBalance) {
 
 // ==================== АВТОРИЗАЦИЯ ====================
 async function login(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
     if (error) {
         showNeonNotification('Неверный email или пароль', 'error');
         return false;
@@ -125,7 +108,7 @@ async function login(email, password) {
 }
 
 async function register(name, email, password) {
-    const { data, error } = await supabase.auth.signUp({
+    const { data, error } = await sb.auth.signUp({
         email,
         password,
         options: { data: { name } }
@@ -149,12 +132,11 @@ async function register(name, email, password) {
 }
 
 async function logout() {
-    await supabase.auth.signOut();
+    await sb.auth.signOut();
     currentUser = null;
     localStorage.removeItem('digitalmarket_current_user');
-    updateAuthUI();
-    updateAdminLink();
     updateSidebarContent();
+    updateAdminLink();
     showNeonNotification('Вы вышли из аккаунта', 'info');
     if (window.location.pathname.includes('purchases.html') || window.location.pathname.includes('my-tickets.html') || window.location.pathname.includes('admin.html')) {
         window.location.href = 'index.html';
@@ -163,11 +145,10 @@ async function logout() {
 
 // ==================== ТОВАРЫ ====================
 async function loadProducts() {
-    const { data, error } = await supabase.from('products').select('*').order('id', { ascending: false });
+    const { data, error } = await sb.from('products').select('*').order('id', { ascending: false });
     if (!error && data && data.length > 0) {
         window.products = data;
     } else {
-        // Добавляем стартовые товары
         const defaultProducts = [
             { name: "Dragon Slayer Скин", price: 1490, price_str: "1490 руб.", description: "Эксклюзивный скин для меча.", image: "🐉", category: "Анимации" },
             { name: "Cyberpunk 2077 Ключ", price: 2299, price_str: "2299 руб.", description: "Лицензионный ключ GOG.", image: "🔑", category: "Игрушки" },
@@ -177,9 +158,9 @@ async function loadProducts() {
             { name: "Сезонный пропуск", price: 1199, price_str: "1199 руб.", description: "Эксклюзивные награды.", image: "🎫", category: "Комнаты" }
         ];
         for (const p of defaultProducts) {
-            await supabase.from('products').insert(p);
+            await sb.from('products').insert(p);
         }
-        const { data: newData } = await supabase.from('products').select('*').order('id', { ascending: false });
+        const { data: newData } = await sb.from('products').select('*').order('id', { ascending: false });
         window.products = newData;
     }
     rebuildCarousel();
@@ -192,7 +173,7 @@ async function addProduct(name, priceNum, desc, imageData, category) {
         showNeonNotification('Только администратор может добавлять товары', 'error');
         return;
     }
-    const { error } = await supabase.from('products').insert({
+    const { error } = await sb.from('products').insert({
         name, price: priceNum, price_str: `${priceNum} руб.`, description: desc, image: imageData, category
     });
     if (!error) {
@@ -209,7 +190,7 @@ async function deleteProduct(productId) {
         return;
     }
     if (!confirm('Удалить товар?')) return;
-    const { error } = await supabase.from('products').delete().eq('id', productId);
+    const { error } = await sb.from('products').delete().eq('id', productId);
     if (!error) {
         showNeonNotification('Товар удалён', 'success');
         loadProducts();
@@ -291,8 +272,8 @@ async function performPurchase(product) {
     const balance = await getUserBalance();
     if (balance >= product.price) {
         const newBalance = balance - product.price;
-        await supabase.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
-        const { error } = await supabase.from('orders').insert({
+        await sb.from('profiles').update({ balance: newBalance }).eq('id', currentUser.id);
+        const { error } = await sb.from('orders').insert({
             product_id: product.id,
             product_name: product.name,
             product_price: product.price_str,
@@ -307,7 +288,7 @@ async function performPurchase(product) {
             if (window.location.pathname.includes('purchases.html')) renderUserOrders();
         } else {
             showNeonNotification('Ошибка создания заказа', 'error');
-            await supabase.from('profiles').update({ balance: balance }).eq('id', currentUser.id);
+            await sb.from('profiles').update({ balance: balance }).eq('id', currentUser.id);
         }
     } else {
         showNeonNotification(`❌ Недостаточно средств! Не хватает ${product.price - balance} руб.`, 'error');
@@ -324,7 +305,7 @@ async function renderUserOrders() {
         if (link) link.addEventListener('click', (e) => { e.preventDefault(); showModal('authModal', 'login'); });
         return;
     }
-    const { data: orders, error } = await supabase
+    const { data: orders, error } = await sb
         .from('orders')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -347,14 +328,12 @@ async function renderUserOrders() {
     });
 }
 
-// Чат по заказу (пользователь)
 async function openUserChat(orderId) {
-    const { data: messages } = await supabase
+    const { data: messages } = await sb
         .from('order_chats')
         .select('*')
         .eq('order_id', orderId)
         .order('created_at', { ascending: true });
-    // Создаём/показываем модалку чата
     let modal = document.getElementById('chatModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -381,14 +360,14 @@ async function openUserChat(orderId) {
     newBtn.onclick = async () => {
         const text = document.getElementById('chatMessageText').value.trim();
         if (!text) return;
-        await supabase.from('order_chats').insert({
+        await sb.from('order_chats').insert({
             order_id: orderId,
             sender: 'user',
             message: text,
             created_at: new Date().toISOString()
         });
         document.getElementById('chatMessageText').value = '';
-        openUserChat(orderId); // обновить чат
+        openUserChat(orderId);
         showNeonNotification('Сообщение отправлено', 'info');
     };
     showModal('chatModal');
@@ -404,7 +383,7 @@ async function renderUserTickets() {
         if (link) link.addEventListener('click', (e) => { e.preventDefault(); showModal('authModal', 'login'); });
         return;
     }
-    const { data: tickets } = await supabase
+    const { data: tickets } = await sb
         .from('tickets')
         .select('*')
         .eq('user_id', currentUser.id)
@@ -436,12 +415,12 @@ async function renderUserTickets() {
 }
 
 async function openUserTicketChat(ticketId) {
-    const { data: messages } = await supabase
+    const { data: messages } = await sb
         .from('ticket_messages')
         .select('*')
         .eq('ticket_id', ticketId)
         .order('created_at', { ascending: true });
-    const { data: ticket } = await supabase.from('tickets').select('*').eq('id', ticketId).single();
+    const { data: ticket } = await sb.from('tickets').select('*').eq('id', ticketId).single();
     let modal = document.getElementById('userTicketChatModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -476,7 +455,7 @@ async function openUserTicketChat(ticketId) {
     newBtn.onclick = async () => {
         const text = document.getElementById('userTicketMessageText').value.trim();
         if (!text) return;
-        await supabase.from('ticket_messages').insert({
+        await sb.from('ticket_messages').insert({
             ticket_id: ticketId,
             sender: 'user',
             message: text,
@@ -492,7 +471,7 @@ async function openUserTicketChat(ticketId) {
 // ==================== ЗАЯВКИ НА ПОПОЛНЕНИЕ ====================
 async function createTopupRequest(amount) {
     if (!currentUser) return;
-    const { error } = await supabase.from('topup_requests').insert({
+    const { error } = await sb.from('topup_requests').insert({
         user_id: currentUser.id,
         user_email: currentUser.email,
         amount: amount,
@@ -510,7 +489,7 @@ async function createTopupRequest(amount) {
 async function renderAdminUsers() {
     const tbody = document.getElementById('adminUsersTableBody');
     if (!tbody) return;
-    const { data: users } = await supabase.from('profiles').select('*');
+    const { data: users } = await sb.from('profiles').select('*');
     tbody.innerHTML = '';
     for (const user of users) {
         if (user.role === 'admin') continue;
@@ -524,7 +503,7 @@ async function renderAdminUsers() {
         blockBtn.textContent = user.blocked ? 'Разблокировать' : 'Заблокировать';
         blockBtn.className = 'admin-user-block-btn';
         blockBtn.addEventListener('click', async () => {
-            await supabase.from('profiles').update({ blocked: !user.blocked }).eq('id', user.id);
+            await sb.from('profiles').update({ blocked: !user.blocked }).eq('id', user.id);
             renderAdminUsers();
             showNeonNotification(`Пользователь ${user.email} ${!user.blocked ? 'заблокирован' : 'разблокирован'}`, 'info');
         });
@@ -539,17 +518,17 @@ async function renderAdminUsers() {
 async function showAdminEditBalanceModal(user) {
     const newBalance = prompt(`Введите новый баланс для ${user.name}:`, user.balance);
     if (newBalance !== null && !isNaN(parseInt(newBalance))) {
-        await supabase.from('profiles').update({ balance: parseInt(newBalance) }).eq('id', user.id);
+        await sb.from('profiles').update({ balance: parseInt(newBalance) }).eq('id', user.id);
         renderAdminUsers();
         showNeonNotification(`Баланс пользователя ${user.email} изменён на ${newBalance} руб.`, 'success');
-        if (currentUser && currentUser.id === user.id) updateBalanceUI();
+        if (currentUser && currentUser.id === user.id) updateSidebarContent();
     }
 }
 
 async function renderAdminOrders() {
     const container = document.getElementById('adminOrdersContainer');
     if (!container) return;
-    const { data: orders } = await supabase.from('orders').select('*').order('order_date', { ascending: false });
+    const { data: orders } = await sb.from('orders').select('*').order('order_date', { ascending: false });
     const pendingOrders = (orders || []).filter(o => o.status === 'pending');
     if (pendingOrders.length === 0) {
         container.innerHTML = '<div class="empty-msg">Нет ожидающих заказов</div>';
@@ -569,8 +548,8 @@ async function renderAdminOrders() {
 }
 
 async function openAdminChat(orderId) {
-    const { data: order } = await supabase.from('orders').select('*').eq('id', orderId).single();
-    const { data: messages } = await supabase.from('order_chats').select('*').eq('order_id', orderId).order('created_at', { ascending: true });
+    const { data: order } = await sb.from('orders').select('*').eq('id', orderId).single();
+    const { data: messages } = await sb.from('order_chats').select('*').eq('order_id', orderId).order('created_at', { ascending: true });
     let modal = document.getElementById('adminChatModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -598,7 +577,7 @@ async function openAdminChat(orderId) {
     newSend.onclick = async () => {
         const text = document.getElementById('adminChatMessageText').value.trim();
         if (!text) return;
-        await supabase.from('order_chats').insert({
+        await sb.from('order_chats').insert({
             order_id: orderId,
             sender: 'admin',
             message: text,
@@ -614,7 +593,7 @@ async function openAdminChat(orderId) {
     newDeliver.onclick = async () => {
         const key = document.getElementById('adminKeyInput').value.trim();
         if (!key) { showNeonNotification('Введите ключ', 'error'); return; }
-        await supabase.from('orders').update({ status: 'delivered', key: key }).eq('id', orderId);
+        await sb.from('orders').update({ status: 'delivered', key: key }).eq('id', orderId);
         showNeonNotification('Товар выдан!', 'success');
         closeModal('adminChatModal');
         renderAdminOrders();
@@ -626,7 +605,7 @@ async function openAdminChat(orderId) {
 async function renderAdminTickets() {
     const container = document.getElementById('adminTicketsContainer');
     if (!container) return;
-    const { data: tickets } = await supabase.from('tickets').select('*').order('created_at', { ascending: false });
+    const { data: tickets } = await sb.from('tickets').select('*').order('created_at', { ascending: false });
     if (!tickets || tickets.length === 0) {
         container.innerHTML = '<div class="empty-msg">Нет обращений</div>';
         return;
@@ -649,7 +628,7 @@ async function renderAdminTickets() {
     document.querySelectorAll('.admin-ticket-close-btn').forEach(btn => {
         btn.addEventListener('click', async () => {
             if (confirm('Закрыть тикет?')) {
-                await supabase.from('tickets').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', btn.dataset.ticketId);
+                await sb.from('tickets').update({ status: 'closed', closed_at: new Date().toISOString() }).eq('id', btn.dataset.ticketId);
                 renderAdminTickets();
                 showNeonNotification('Тикет закрыт', 'info');
             }
@@ -658,8 +637,8 @@ async function renderAdminTickets() {
 }
 
 async function openAdminTicketChat(ticketId) {
-    const { data: ticket } = await supabase.from('tickets').select('*').eq('id', ticketId).single();
-    const { data: messages } = await supabase.from('ticket_messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
+    const { data: ticket } = await sb.from('tickets').select('*').eq('id', ticketId).single();
+    const { data: messages } = await sb.from('ticket_messages').select('*').eq('ticket_id', ticketId).order('created_at', { ascending: true });
     let modal = document.getElementById('adminTicketChatModal');
     if (!modal) {
         modal = document.createElement('div');
@@ -687,7 +666,7 @@ async function openAdminTicketChat(ticketId) {
     newSend.onclick = async () => {
         const text = document.getElementById('ticketChatMessageText').value.trim();
         if (!text) return;
-        await supabase.from('ticket_messages').insert({
+        await sb.from('ticket_messages').insert({
             ticket_id: ticketId,
             sender: 'admin',
             message: text,
@@ -703,7 +682,7 @@ async function openAdminTicketChat(ticketId) {
 async function renderAdminTopupRequests() {
     const container = document.getElementById('adminTopupRequestsContainer');
     if (!container) return;
-    const { data: requests } = await supabase.from('topup_requests').select('*').eq('status', 'pending').order('created_at', { ascending: true });
+    const { data: requests } = await sb.from('topup_requests').select('*').eq('status', 'pending').order('created_at', { ascending: true });
     if (!requests || requests.length === 0) {
         container.innerHTML = '<div class="empty-msg">Нет заявок на пополнение</div>';
         return;
@@ -720,10 +699,14 @@ async function renderAdminTopupRequests() {
             const id = btn.dataset.requestId;
             const req = requests.find(r => r.id == id);
             if (req && confirm('Подтвердить пополнение?')) {
-                await supabase.from('profiles').update({ balance: supabase.rpc('increment', { row_id: req.user_id, amount: req.amount }) });
-                await supabase.from('topup_requests').update({ status: 'approved' }).eq('id', id);
+                // Получаем текущий баланс пользователя и увеличиваем
+                const { data: userData } = await sb.from('profiles').select('balance').eq('id', req.user_id).single();
+                const newBalance = (userData?.balance || 0) + req.amount;
+                await sb.from('profiles').update({ balance: newBalance }).eq('id', req.user_id);
+                await sb.from('topup_requests').update({ status: 'approved' }).eq('id', id);
                 renderAdminTopupRequests();
                 showNeonNotification(`Пополнение ${req.amount} руб. подтверждено`, 'success');
+                if (currentUser && currentUser.id === req.user_id) updateSidebarContent();
             }
         });
     });
@@ -753,7 +736,7 @@ async function renderAdminProducts() {
     });
 }
 
-// ==================== ФУНКЦИИ ДЛЯ ПОДДЕРЖКИ (СОЗДАНИЕ ТИКЕТА) ====================
+// ==================== ПОДДЕРЖКА: СОЗДАНИЕ ТИКЕТА ====================
 async function setupSupportForm() {
     const sendBtn = document.getElementById('sendSupportBtn');
     if (!sendBtn) return;
@@ -764,7 +747,7 @@ async function setupSupportForm() {
         if (!name || !email || !msg) { showNeonNotification('Заполните все поля', 'error'); return; }
         let userEmail = currentUser ? currentUser.email : email;
         let userName = currentUser ? currentUser.name : name;
-        const { data, error } = await supabase.from('tickets').insert({
+        const { data, error } = await sb.from('tickets').insert({
             user_id: currentUser?.id || null,
             user_email: userEmail,
             user_name: userName,
@@ -773,7 +756,7 @@ async function setupSupportForm() {
         }).select();
         if (error) { showNeonNotification('Ошибка создания тикета', 'error'); return; }
         const ticketId = data[0].id;
-        await supabase.from('ticket_messages').insert({
+        await sb.from('ticket_messages').insert({
             ticket_id: ticketId,
             sender: 'user',
             message: msg,
@@ -895,9 +878,19 @@ function createUserSidebar() {
     `;
     document.body.appendChild(userSidebar);
 
-    toggleBtn.addEventListener('click', (e) => { e.stopPropagation(); userSidebar.classList.add('open'); sidebarOverlay.classList.add('show'); });
-    userSidebar.querySelector('.sidebar-close').addEventListener('click', () => { userSidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); });
-    sidebarOverlay.addEventListener('click', () => { userSidebar.classList.remove('open'); sidebarOverlay.classList.remove('show'); });
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        userSidebar.classList.add('open');
+        sidebarOverlay.classList.add('show');
+    });
+    userSidebar.querySelector('.sidebar-close').addEventListener('click', () => {
+        userSidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('show');
+    });
+    sidebarOverlay.addEventListener('click', () => {
+        userSidebar.classList.remove('open');
+        sidebarOverlay.classList.remove('show');
+    });
 }
 
 function updateSidebarContent() {
@@ -905,10 +898,14 @@ function updateSidebarContent() {
     const emailEl = document.getElementById('sidebarUserEmail');
     const balanceEl = document.getElementById('sidebarUserBalance');
     const authBtn = document.getElementById('sidebarAuthBtn');
+    const topupBtn = document.getElementById('sidebarTopUpBtn');
+    
     if (currentUser) {
         if (nameEl) nameEl.textContent = currentUser.name;
         if (emailEl) emailEl.textContent = currentUser.email;
-        getUserBalance().then(balance => { if (balanceEl) balanceEl.textContent = `Баланс: ${balance} руб.`; });
+        getUserBalance().then(balance => {
+            if (balanceEl) balanceEl.textContent = `Баланс: ${balance} руб.`;
+        });
         if (authBtn) authBtn.textContent = 'Выйти';
     } else {
         if (nameEl) nameEl.textContent = 'Гость';
@@ -916,21 +913,28 @@ function updateSidebarContent() {
         if (balanceEl) balanceEl.textContent = 'Баланс: 0 руб.';
         if (authBtn) authBtn.textContent = 'Войти';
     }
-    const topupBtn = document.getElementById('sidebarTopUpBtn');
+
     if (topupBtn) {
         const newTopup = topupBtn.cloneNode(true);
         topupBtn.parentNode.replaceChild(newTopup, topupBtn);
-        newTopup.addEventListener('click', () => { if (currentUser) showTopupModal(); else showNeonNotification('Сначала войдите', 'info'); });
+        newTopup.addEventListener('click', () => {
+            if (currentUser) showTopupModal();
+            else showNeonNotification('Сначала войдите', 'info');
+        });
     }
     if (authBtn) {
         const newAuth = authBtn.cloneNode(true);
         authBtn.parentNode.replaceChild(newAuth, authBtn);
-        newAuth.addEventListener('click', () => { if (currentUser) logout(); else showModal('authModal', 'login'); });
+        newAuth.addEventListener('click', () => {
+            if (currentUser) logout();
+            else showModal('authModal', 'login');
+        });
     }
 }
 
-function updateAuthUI() {
-    // nothing extra
+function updateAdminLink() {
+    const link = document.getElementById('adminLink');
+    if (link) link.style.display = (currentUser && currentUser.role === 'admin') ? 'inline-block' : 'none';
 }
 
 // ==================== ИНИЦИАЛИЗАЦИЯ СТРАНИЦЫ ====================
@@ -942,13 +946,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     setupSupportForm();
     setupTopupHandlers();
 
-    // Удаляем старые кнопки авторизации и баланса из шапки
+    // Удаляем старые кнопки и блоки из шапки
     const oldAuthBtn = document.getElementById('authBtn');
     if (oldAuthBtn) oldAuthBtn.remove();
     const oldBalanceArea = document.getElementById('balanceArea');
     if (oldBalanceArea) oldBalanceArea.remove();
 
-    // Модальные окна: закрытие по крестику
+    // Закрытие модалок
     const closeAuth = document.querySelector('#authModal .close-modal');
     if (closeAuth) closeAuth.addEventListener('click', () => closeModal('authModal'));
     const authForm = document.getElementById('authForm');
@@ -970,7 +974,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('carouselNextBtn')?.addEventListener('click', () => { const track = document.getElementById('carouselTrack'); if (track) track.scrollBy({ left: 260, behavior: 'smooth' }); });
     }
 
-    // Быстрая покупка (если есть кнопка на главной)
     const buyBtn = document.getElementById('buyProductBtn');
     if (buyBtn) {
         buyBtn.addEventListener('click', () => {
@@ -980,14 +983,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     }
 
-    // Каталог (фильтрация)
     if (document.getElementById('catalogGrid')) {
         const categoryBtns = document.querySelectorAll('.category-btn');
         categoryBtns.forEach(btn => btn.addEventListener('click', () => { categoryBtns.forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentCatalogCategory = btn.dataset.category; renderCatalog(currentCatalogCategory); }));
         renderCatalog(currentCatalogCategory);
     }
 
-    // Страницы
     if (window.location.pathname.includes('purchases.html')) renderUserOrders();
     if (window.location.pathname.includes('my-tickets.html')) renderUserTickets();
     if (window.location.pathname.includes('admin.html')) {
